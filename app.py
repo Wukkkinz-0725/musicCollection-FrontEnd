@@ -22,20 +22,22 @@ def post_data(url, path, data):
 
 # functions for songs
 @app.route("/", methods=('GET', 'POST'))
-def main():
+def main(data=None):
     data = get_data(base_url, '/songs/all')
     if request.method == 'POST':
-        # 在html里点击submit，会通过POST进入这个if statement
         query_type = request.form['query_type']
         query_value = request.form['query_value']
         if query_type == 'sid':
-            # TODO: 报错，如果sid错误，sid非integer，目前未考虑错误输入
-            # TODO: 其实这里只需要verify sid，因为打开song detail界面时只用了sid
-            return redirect(url_for('view_songs_detail', sid=int(query_value)))
+            data = []
+            data.append(get_data(base_url, '/songs/query/' + query_type + '/' + query_value))
+            return redirect(url_for('show_song_data', data=data))
         elif query_type == 'name':
-            data = get_data(base_url, '/songs/query/song_name/' + query_value)
-            # TODO: 目前默认result只有一首歌，如果需要处理query结果为多首歌需要增加html
-            return redirect(url_for('view_songs_detail', sid=data[0]['sid']))
+            data = get_data(base_url, '/songs/query/' + query_type + '/' + query_value)
+            return redirect(url_for('show_song_data', data=data))
+    return render_template('./songs/songs.html', data=data)
+
+@app.route("/show_song_data", methods=('GET', 'POST'))
+def show_partial_songs(data):
     return render_template('./songs/songs.html', data=data)
 
 @app.route('/songs/detail/<sid>')
