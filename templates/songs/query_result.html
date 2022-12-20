@@ -11,19 +11,19 @@
 </head>
 
 <script>
-function select_option (id,value_selected) {
+    function select_option (id,value_selected) {
+    
+     var select;
+     select = document.getElementById(id);
+     if (select == null) return 0;
 
- var select;
- select = document.getElementById(id);
- if (select == null) return 0;
+     var option;
+     option = select.options.namedItem(value_selected);
+     if (option == null) return 0;
 
- var option;
- option = select.options.namedItem(value_selected);
- if (option == null) return 0;
-
- option.selected = "selected";
- return true;
-}
+     option.selected = "selected";
+     return true;
+    }
 </script>
 
 
