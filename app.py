@@ -22,18 +22,17 @@ def post_data(url, path, data):
 
 # functions for songs
 @app.route("/", methods=('GET', 'POST'))
-def main(data=None):
+def main():
     data = get_data(base_url, '/songs/all')
     if request.method == 'POST':
         query_type = request.form['query_type']
         query_value = request.form['query_value']
         if query_type == 'sid':
-            data = []
-            data.append(get_data(base_url, '/songs/query/' + query_type + '/' + query_value))
-            return redirect(url_for('show_song_data', data=data))
+            res = [get_data(base_url, '/songs/query/sid/' + query_value)]
         elif query_type == 'name':
-            data = get_data(base_url, '/songs/query/' + query_type + '/' + query_value)
-            return redirect(url_for('show_song_data', data=data))
+            res = get_data(base_url, '/songs/query/song_name/' + query_value)
+        data = {'dict': res, 'query_type': query_type, 'query_value': query_value}
+        return render_template('./songs/query_result.html', data=data)
     return render_template('./songs/songs.html', data=data)
 
 @app.route("/show_song_data", methods=('GET', 'POST'))
