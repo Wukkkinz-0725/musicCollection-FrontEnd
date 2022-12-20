@@ -6,7 +6,7 @@
 </head>
 <body>
     <table>
-        {% for key, value in data.items() %}
+        {% for key, value in data['song_data'].items() %}
             <tr>
                <th> {{ key }} </th>
                <td> {{ value }} </td>
@@ -14,12 +14,41 @@
         {% endfor %}
     </table>
     <!--edit button, 点击后执行app.py/edit_song_detail() -->
-    <a href={{url_for('edit_song_detail', sid=data['sid'])}}><button type=”button”>Edit Song</button></a><br>
+    <a href={{url_for('edit_song_detail', sid=data['song_data']['sid'])}}><button type=”button”>Edit Song</button></a><br>
 
     <!--delete button, 点击后执行app.py/delete_song() -->
-    <a href={{url_for('delete_song', sid=data['sid'])}}><button type=”button”>Delete Song</button></a><br>
+    <a href={{url_for('delete_song', sid=data['song_data']['sid'])}}><button type=”button”>Delete Song</button></a><br>
 
     <!--home button, 点击后执行app.py/main() -->
     <a href={{url_for('main')}}><button type=”button”>Return Home</button></a>
+
+    <form id="commentForm" method="POST">
+        <textarea class="comment-send-input" name="comment" form="commentForm" cols="80" rows="3" placeholder="Write your comment here."></textarea>
+        <input class="comment-send-button" type="submit" value="Comment">
+    </form>
+
+    <table class="table mt-3">
+      <thead>
+        <tr>
+          <th>username</th>
+          <th>content</th>
+          <th>date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in data['comments'] %}
+        <tr>
+          <td>{{row['username']}}</td>
+          <td>{{row['content']}}</td>
+          <td>{{row['date']}}</td>
+          <!-- View song details, executes app.py/view_songs_detail() on click -->
+          <td><a href={{url_for('delete_comment', cid=row['cid'])}}>
+            <!-- Use Bootstrap button styles -->
+            <button type="button" class="btn btn-secondary btn-sm">Delete</button></a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
 </body>
 </html>

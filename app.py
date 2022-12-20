@@ -1,5 +1,6 @@
 from flask import Flask, Response, request, render_template, url_for, flash, redirect
 from flask_cors import CORS
+from datetime import datetime
 import os
 import requests
 import re
@@ -18,7 +19,10 @@ base_url = 'https://szbxfmue7c.execute-api.us-east-2.amazonaws.com/music'
 
 
 def get_data(url, path):
-    data = requests.get(url + path).json()
+    try:
+        data = requests.get(url + path).json()
+    except Exception:
+        data = []
     return data
 
 
@@ -46,9 +50,21 @@ def main():
 def show_partial_songs(data):
     return render_template('./songs/songs.html', data=data)
 
-@app.route('/songs/detail/<sid>')
+@app.route('/songs/detail/<sid>', methods=('GET', 'POST'))
 def view_songs_detail(sid):
-    data = get_data(base_url, '/songs/query/sid/' + str(sid))
+    song_data = get_data(base_url, '/songs/query/sid/' + str(sid))
+
+    comments_data = get_data(base_url, '/comments/query/sid/' + str(sid))
+    data = {'song_data': song_data, 'comments': comments_data}
+
+    if request.method == 'POST':
+        # 在html里点击submit，会通过POST进入这个if statement，发送评论
+        # TODO: change uid
+        comment_dict = {'content': request.form['comment'], 'uid': 1, 'sid': sid, 'date': str(datetime.now())}
+
+        # 保存评论，并显示这首歌的detail
+        res = post_data(base_url, '/comments/create', comment_dict)
+        return redirect(url_for('view_songs_detail', sid=sid))
     return render_template('./songs/song_detail.html', data=data)
 
 @app.route('/songs/new_songs', methods=('GET', 'POST'))
@@ -78,10 +94,18 @@ def create_songs_webpage():
 @app.route('/songs/delete/<sid>')
 def delete_song(sid):
     # TODO: delete this function and corresponding button
-    # delete_song_by_sid(sid)
-    res = post_data(base_url, '/songs/delete' + str(sid), '')
+    res = post_data(base_url, '/songs/delete/' + str(sid), '')
     # TODO: verify success
     return redirect(url_for('main'))
+
+
+@app.route('/comments/delete/<cid>')
+def delete_comment(cid):
+    # TODO: delete this function and corresponding button
+    sid = get_data(base_url, '/comments/query/cid/' + str(cid))['sid']
+    res = post_data(base_url, '/comments/delete/cid/' + str(cid), '')
+    # TODO: verify success
+    return redirect(url_for('view_songs_detail', sid=sid))
 
 
 @app.route('/songs/edit/<sid>', methods=('GET', 'POST'))
