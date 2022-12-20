@@ -2,6 +2,13 @@ from flask import Flask, Response, request, render_template, url_for, flash, red
 from flask_cors import CORS
 import os
 import requests
+import re
+
+DATE_PATTERN = r'\d{4}-\d{2}-\d{2}'
+
+def validate_date(release_date):
+    pattern = re.compile(DATE_PATTERN)
+    return pattern.match(release_date)
 
 # Create the Flask application object.
 app = Flask(__name__)
@@ -54,11 +61,11 @@ def create_songs_webpage():
         
         if not songs_name:
             # TODO: flash not working properly
-            flash('Song name is required!')
-        elif not release_date:
-            flash('Release date is required!')
+            flash('Song name is invalid.')
+        elif not release_date or not validate_date(release_date):
+            flash('Release date is invalid.')
         elif not artist:
-            flash('Artist is required!')
+            flash('Artist is invalid.')
         else:
             # 保存歌曲，并显示这首歌的detail
             res = post_data(base_url, '/songs/create', {'song_name': songs_name, 'artist': artist, 'release_date': release_date})
@@ -79,27 +86,24 @@ def delete_song(sid):
 
 @app.route('/songs/edit/<sid>', methods=('GET', 'POST'))
 def edit_song_detail(sid):
-    # data = SongsDB.get_song_by_sid(sid)
-    #
-    # if request.method == 'POST':
-    #     # 在html里点击submit，会通过POST进入这个if statement
-    #     songs_name = request.form['song_name']
-    #     artist = request.form['artist']
-    #     release_date = request.form['release_date']
-    #
-    #     if not songs_name:
-    #         flash('Song name is required!')
-    #     elif not artist:
-    #         flash('Artist is required!')
-    #     elif not release_date:
-    #         flash('Release Date is required!')
-    #     else:
-    #         # 保存歌曲，并显示这首歌的detail
-    #         SongsDB.update_song_by_sid(sid, {'song_name': songs_name, 'artist': artist, 'release_date': release_date})
-    #         return redirect(url_for('view_songs_detail', sid=sid))
-    # 点击edit song button后直接渲染html
-    return render_template('edit_song_detail.html', data=data)
-
+    data = get_data(base_url, '/songs/query/sid/' + str(sid))
+    if request.method == 'POST':
+        # 在html里点击submit，会通过POST进入这个if statement
+        dic = {}
+        if len(request.form['song_name']) > 0:
+            dic['song_name'] = request.form['song_name']
+        if len(request.form['artist']) > 0:
+            dic['artist'] = request.form['artist']
+        if len(request.form['release_date']) > 0:
+            if validate_date(request.form['release_date']):
+                dic['release_date'] = request.form['release_date']
+            else:
+                flash('Release date is invalid.')
+                return redirect(url_for('edit_song_detail', sid=sid))
+        if len(dic) > 0:
+            res = post_data(base_url, '/songs/update/' + str(sid), dic)
+            return redirect(url_for('view_songs_detail', sid=sid))
+    return render_template('./songs/edit_song_detail.html', data=data)
 
 
 if __name__ == "__main__":
