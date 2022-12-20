@@ -16,7 +16,7 @@ app = Flask(__name__)
 CORS(app)
 app.config['SECRET_KEY'] = 'whatever'
 base_url = 'https://szbxfmue7c.execute-api.us-east-2.amazonaws.com/music'
-
+middleware_url = 'http://googleauth-env.eba-6yr79q2j.us-east-2.elasticbeanstalk.com'
 
 def get_data(url, path):
     try:
@@ -30,9 +30,19 @@ def post_data(url, path, data):
     res = requests.post(url + path, json=data)
     return res
 
+# functions for index and login
+@app.route('/')
+def index():
+    return render_template('./login/index.html')
+
+@app.route("/login")
+def google_login():
+    print("login")
+    data = get_data(middleware_url, '/login')
+    return data
 
 # functions for songs
-@app.route("/", methods=('GET', 'POST'))
+@app.route("/main", methods=('GET', 'POST'))
 def main():
     data = get_data(base_url, '/songs/all')
     if request.method == 'POST':
