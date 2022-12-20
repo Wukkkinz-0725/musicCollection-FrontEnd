@@ -63,8 +63,7 @@ def create_songs_webpage():
             # 保存歌曲，并显示这首歌的detail
             res = post_data(base_url, '/songs/create', {'song_name': songs_name, 'artist': artist, 'release_date': release_date})
             # res = SongsDB.create_song({'song_name': songs_name, 'artist': artist, 'release_date': release_date})
-            print(res.json())
-            return redirect(url_for('view_songs_detail', sid=res.json()))
+            return redirect(url_for('view_songs_detail', sid=res.json()['sid']))
     # 点击create song button后直接渲染html
     return render_template('./songs/create_song.html')
 
