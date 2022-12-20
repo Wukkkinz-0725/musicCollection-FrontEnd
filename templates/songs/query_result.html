@@ -10,6 +10,23 @@
   <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/mainpage.css') }}">
 </head>
 
+<script>
+function select_option (id,value_selected) {
+
+ var select;
+ select = document.getElementById(id);
+ if (select == null) return 0;
+
+ var option;
+ option = select.options.namedItem(value_selected);
+ if (option == null) return 0;
+
+ option.selected = "selected";
+ return true;
+}
+</script>
+
+
 <body>
   <header class="bg-light py-3">
     <div class="container">
@@ -20,16 +37,17 @@
     <!-- Use Bootstrap form styles -->
       <!--<input type="submit" value="Submit" class="btn btn-primary"> -->
     </form>
-          <form method="POST" class="form-inline">
-      <label for="query_type" class="mr-2">Search by:</label>
-      <select name="query_type" id="query_type" class="form-control mr-2">
-        <option value="sid">SID</option>
-        <option value="name" selected>Name</option>
-      </select>
-      <label for="query_value" class="mr-2">Query:</label>
-      <input type="text" id="query_value" name="query_value" value="{{data['query_value']}}"form-control mr-2">
-      <!-- Use Bootstrap button styles -->
-      <input type="submit" value="Submit" class="btn btn-primary">
+      <form method="POST" class="form-inline">
+          <label for="query_type" class="mr-2">Search by:</label>
+          <select name="query_type" id="query_type" class="form-control mr-2">
+            <option value="sid" id="sid" name="sid">SID</option>
+            <option value="name" id="name" name="id">Name</option>
+          </select>
+          <script>select_option ("query_type", "{{data['query_type']}}");</script>
+          <label for="query_value" class="mr-2">Query:</label>
+          <input type="text" id="query_value" name="query_value" value="{{data['query_value']}}" class="form-control mr-2">
+          <!-- Use Bootstrap button styles -->
+          <input type="submit" value="Submit" class="btn btn-primary">
     </form>
     <!-- Use Bootstrap table styles -->
     <table class="table mt-3">
