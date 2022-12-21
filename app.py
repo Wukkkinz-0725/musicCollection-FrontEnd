@@ -4,6 +4,17 @@ from datetime import datetime
 import os
 import requests
 import re
+import os
+import pathlib
+import requests
+from datetime import datetime
+from flask import Flask, session, abort, redirect, request
+from google.oauth2.credentials import Credentials
+from google.oauth2 import id_token
+from google_auth_oauthlib.flow import Flow
+from pip._vendor import cachecontrol
+import google.auth.transport.requests
+import secrets
 
 DATE_PATTERN = r'\d{4}-\d{2}-\d{2}'
 
@@ -15,8 +26,16 @@ def validate_date(release_date):
 app = Flask(__name__)
 CORS(app)
 app.config['SECRET_KEY'] = 'whatever'
+app.secret_key = secrets.token_hex(16)
+client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "client_secret.json")
 base_url = 'https://szbxfmue7c.execute-api.us-east-2.amazonaws.com/music'
 middleware_url = 'http://googleauth-env.eba-6yr79q2j.us-east-2.elasticbeanstalk.com'
+
+flow = Flow.from_client_secrets_file(
+    client_secrets_file=client_secrets_file,
+    scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
+    redirect_uri="http://127.0.0.1:9001/authorize"
+)
 
 def get_data(url, path):
     try:
@@ -35,11 +54,6 @@ def post_data(url, path, data):
 def index():
     return render_template('./login/index.html')
 
-@app.route("/login")
-def google_login():
-    print("login")
-    data = get_data(middleware_url, '/login')
-    return data
 
 # functions for songs
 @app.route("/main", methods=('GET', 'POST'))
@@ -138,6 +152,88 @@ def edit_song_detail(sid):
             res = post_data(base_url, '/songs/update/' + str(sid), dic)
             return redirect(url_for('view_songs_detail', sid=sid))
     return render_template('./songs/edit_song_detail.html', data=data)
+
+
+def login_is_required(function):
+    def wrapper(*args, **kwargs):
+        if "google_id" not in session:
+            return abort(401)  # Authorization required
+        else:
+            return function()
+    return wrapper
+
+@app.route("/login")
+def google_login():
+    authorization_url, state = flow.authorization_url()
+    session["state"] = state
+    return redirect(authorization_url)
+
+
+@app.route("/authorize")
+def authorize():
+    flow.fetch_token(authorization_response=request.url)
+
+    # print(session['state'])
+    # print(dict(request.args))
+    # if not session["state"] == request.args["state"]:
+    #     abort(500)  # State does not match!
+
+    auth_code = request.args.get('code')
+    credentials = flow.credentials
+    request_session = requests.session()
+    cached_session = cachecontrol.CacheControl(request_session)
+    token_request = google.auth.transport.requests.Request(session=cached_session)
+
+    id_info = id_token.verify_oauth2_token(
+        id_token=credentials._id_token,
+        request=token_request,
+        audience=os.environ.get("CLIENT_ID")
+    )
+
+    # store user info
+    session["google_id"] = id_info.get("sub")
+    session["name"] = id_info.get("name")
+    session["email"] = id_info.get("email")
+
+    # store credential info
+    session["token"] = credentials._id_token
+    session["refresh_token"] = credentials._refresh_token
+    session["scopes"] = credentials._scopes
+    session["client_id"] = credentials._client_id
+    session["client_secret"] = credentials._client_secret
+    session["quota_project_id"] = credentials._quota_project_id
+    session["expiry"] = credentials.expiry.strftime("%Y-%m-%dT%H:%M:%S")
+
+    return redirect("/protected_area")
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+
+@app.route("/protected_area")
+@login_is_required
+def protected_area():
+    SCOPES = ['https://www.googleapis.com/auth/calendar']
+    # auth_url, _ = google.auth.web.AuthorizedSession(client_id=CLIENT_ID, client_secret=CLIENT_SECRET).authorization_url(google.auth.web.OOB_CALLBACK_URN, scopes=SCOPES)
+    # auth_code = session["auth_code"]
+    # creds = google.oauth2.credentials.Credentials.from_authorized_user_info(
+    #     code=auth_code, client_id=CLIENT_ID, client_secret=CLIENT_SECRET, scopes=SCOPES)
+    # print(creds)
+    # flow.fetch_token(authorization_response=request.url)
+    print(session)
+    credentials = Credentials.from_authorized_user_info({
+        "token": session["token"],
+        "refresh_token": session["refresh_token"],
+        "scopes": session["scopes"],
+        "client_id": session["client_id"],
+        "client_secret": session["client_secret"],
+        "quota_project_id": session["quota_project_id"],
+        "expiry": session["expiry"]
+    })
+    return f"Hello {session['name']}! <br/> <a href='/logout'><button>Logout</button></a>"
 
 
 if __name__ == "__main__":
