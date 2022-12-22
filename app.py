@@ -27,15 +27,24 @@ app = Flask(__name__)
 CORS(app)
 app.config['SECRET_KEY'] = 'whatever'
 app.secret_key = secrets.token_hex(16)
-client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "client_secret.json")
 base_url = 'https://szbxfmue7c.execute-api.us-east-2.amazonaws.com/music'
 middleware_url = 'http://googleauth-env.eba-6yr79q2j.us-east-2.elasticbeanstalk.com'
 
+client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "client_secret.json")
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 flow = Flow.from_client_secrets_file(
     client_secrets_file=client_secrets_file,
     scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
     redirect_uri="http://127.0.0.1:9001/authorize"
 )
+
+def login_is_required(function):
+    def wrapper(*args, **kwargs):
+        if "google_id" not in session:
+            return abort(401)  # Authorization required
+        else:
+            return function()
+    return wrapper
 
 def get_data(url, path):
     try:
@@ -57,6 +66,7 @@ def index():
 
 # functions for songs
 @app.route("/main", methods=('GET', 'POST'))
+@login_is_required
 def main():
     data = get_data(base_url, '/songs/all')
     if request.method == 'POST':
@@ -71,10 +81,12 @@ def main():
     return render_template('./songs/songs.html', data=data)
 
 @app.route("/show_song_data", methods=('GET', 'POST'))
+@login_is_required
 def show_partial_songs(data):
     return render_template('./songs/songs.html', data=data)
 
 @app.route('/songs/detail/<sid>', methods=('GET', 'POST'))
+@login_is_required
 def view_songs_detail(sid):
     song_data = get_data(base_url, '/songs/query/sid/' + str(sid))
 
@@ -92,6 +104,7 @@ def view_songs_detail(sid):
     return render_template('./songs/song_detail.html', data=data)
 
 @app.route('/songs/new_songs', methods=('GET', 'POST'))
+@login_is_required
 def create_songs_webpage():
     if request.method == 'POST':
         # 在html里点击submit，会通过POST进入这个if statement
@@ -116,6 +129,7 @@ def create_songs_webpage():
 
 
 @app.route('/songs/delete/<sid>')
+@login_is_required
 def delete_song(sid):
     # TODO: delete this function and corresponding button
     res = post_data(base_url, '/songs/delete/' + str(sid), '')
@@ -124,6 +138,7 @@ def delete_song(sid):
 
 
 @app.route('/comments/delete/<cid>')
+@login_is_required
 def delete_comment(cid):
     # TODO: delete this function and corresponding button
     sid = get_data(base_url, '/comments/query/cid/' + str(cid))['sid']
@@ -133,6 +148,7 @@ def delete_comment(cid):
 
 
 @app.route('/songs/edit/<sid>', methods=('GET', 'POST'))
+@login_is_required
 def edit_song_detail(sid):
     data = get_data(base_url, '/songs/query/sid/' + str(sid))
     if request.method == 'POST':
@@ -152,15 +168,6 @@ def edit_song_detail(sid):
             res = post_data(base_url, '/songs/update/' + str(sid), dic)
             return redirect(url_for('view_songs_detail', sid=sid))
     return render_template('./songs/edit_song_detail.html', data=data)
-
-
-def login_is_required(function):
-    def wrapper(*args, **kwargs):
-        if "google_id" not in session:
-            return abort(401)  # Authorization required
-        else:
-            return function()
-    return wrapper
 
 @app.route("/login")
 def google_login():
@@ -187,7 +194,7 @@ def authorize():
     id_info = id_token.verify_oauth2_token(
         id_token=credentials._id_token,
         request=token_request,
-        audience=os.environ.get("CLIENT_ID")
+        audience='942606144781-d1nlf55298ld772qd9d4h093qnebplpd.apps.googleusercontent.com'
     )
 
     # store user info
@@ -217,13 +224,6 @@ def logout():
 @login_is_required
 def protected_area():
     SCOPES = ['https://www.googleapis.com/auth/calendar']
-    # auth_url, _ = google.auth.web.AuthorizedSession(client_id=CLIENT_ID, client_secret=CLIENT_SECRET).authorization_url(google.auth.web.OOB_CALLBACK_URN, scopes=SCOPES)
-    # auth_code = session["auth_code"]
-    # creds = google.oauth2.credentials.Credentials.from_authorized_user_info(
-    #     code=auth_code, client_id=CLIENT_ID, client_secret=CLIENT_SECRET, scopes=SCOPES)
-    # print(creds)
-    # flow.fetch_token(authorization_response=request.url)
-    print(session)
     credentials = Credentials.from_authorized_user_info({
         "token": session["token"],
         "refresh_token": session["refresh_token"],
@@ -233,7 +233,55 @@ def protected_area():
         "quota_project_id": session["quota_project_id"],
         "expiry": session["expiry"]
     })
-    return f"Hello {session['name']}! <br/> <a href='/logout'><button>Logout</button></a>"
+    return redirect(url_for('create_user_page'))
+
+# TODO: after login with google account, 
+#       create a new page for creating a new user
+#       if create successfully, then redirect to the main page
+
+def validate_email(email):
+    if not re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", email):
+        return False
+    else:
+        return 
+    
+@app.route("/create_user", methods=('GET', 'POST'))
+@login_is_required
+def create_user_page():
+    if request.method == 'POST':
+        # email, username, age, description
+        dic = {}
+        
+        # check username
+        if len(request.form['username']) > 0:
+            dic['username'] = request.form['username']
+        else:
+            flash('Username is required.')
+            
+        # check email
+        if len(request.form['email']) > 0:
+            if validate_email(request.form['email']):
+                dic['email'] = request.form['email']
+            else:
+                flash('Email is invalid.')
+        else:
+            flash('Email is required.')
+            
+        # check age but it can be null
+        if len(request.form['age']) > 0:
+            dic['age'] = request.form['age']
+            
+        # check description but it can be null
+        if len(request.form['description']) > 0:
+            dic['description'] = request.form['description']
+            
+        if 'username' in dic and 'email' in dic:
+            res = post_data(base_url, '/users/create', dic)
+            flash('Create user successfully.')
+            return redirect(url_for('main'))
+    return render_template('./users/create_user.html')
+    
+# TODO: 在主页加上，Hello, {username} 的提示
 
 
 if __name__ == "__main__":
