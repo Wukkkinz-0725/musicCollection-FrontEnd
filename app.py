@@ -38,7 +38,7 @@ flow = Flow.from_client_secrets_file(
     client_secrets_file=client_secrets_file,
     scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email",
             "openid"],
-    redirect_uri="http://127.0.0.1:9001/authorize"
+    redirect_uri="http://6156-front-end.eba-rvf5v6yj.us-east-2.elasticbeanstalk.com/authorize"
 )
 
 
@@ -306,48 +306,6 @@ def create_user():
     else:
         session['uid'] = uid  # TODO: get uid from res
     return redirect(url_for('main'))
-
-
-# @app.route("/create_user", methods=('GET', 'POST'))
-# def craete_user():
-#     if session['google_id'] is None:
-#         return redirect(url_for('index'))
-#     if request.method == 'POST':
-#         # email, username, age, description
-#         dic = {}
-
-#         # check username
-#         if len(request.form['username']) > 0:
-#             dic['username'] = request.form['username']
-#         else:
-#             flash('Username is required.')
-
-#         # check email
-#         if len(request.form['email']) > 0:
-#             if validate_email(request.form['email']):
-#                 dic['email'] = request.form['email']
-#             else:
-#                 flash('Email is invalid.')
-#         else:
-#             flash('Email is required.')
-
-#         if len(request.form['password']) > 0:
-#             dic['password'] = request.form['password']
-#         else:
-#             flash('Password is required.')
-
-#         if len(request.form['age']) > 0:
-#             dic['age'] = request.form['age']
-#         else:
-#             flash('Age is required.')
-
-#         if len(request.form['description']) > 0:
-#             dic['description'] = request.form['description']
-#         else:
-#             flash('Description is required.')
-#         res = post_data(base_url, '/users/create', dic)
-#         return redirect(url_for('main'))
-#     return render_template('./users/create_user.html')
 
 # code for user profile
 @app.route("/profile", methods=('GET', 'POST'))
