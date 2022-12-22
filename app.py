@@ -30,7 +30,6 @@ CORS(app)
 app.config['SECRET_KEY'] = 'whatever'
 app.secret_key = secrets.token_hex(16)
 base_url = 'https://szbxfmue7c.execute-api.us-east-2.amazonaws.com/music'
-middleware_url = 'http://googleauth-env.eba-6yr79q2j.us-east-2.elasticbeanstalk.com'
 
 client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "client_secret.json")
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -38,7 +37,7 @@ flow = Flow.from_client_secrets_file(
     client_secrets_file=client_secrets_file,
     scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email",
             "openid"],
-    redirect_uri="http://6156-front-end.eba-rvf5v6yj.us-east-2.elasticbeanstalk.com/authorize"
+    redirect_uri="http://frontend-env.eba-kffmqkp3.us-east-2.elasticbeanstalk.com/authorize"
 )
 
 
@@ -350,5 +349,5 @@ def user_detail():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 8000))
-    app.run(host="0.0.0.0", port=port)
+    port = int(os.environ.get('PORT', 9001))
+    app.run(host="localhost", port=port)
