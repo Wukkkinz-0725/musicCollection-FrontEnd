@@ -6,15 +6,28 @@
   <title>SONG HOME PAGE</title>
   <!-- Include Bootstrap CSS file -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-  <!-- Include custom CSS file -->
 </head>
 
 <body>
-  <header class="bg-light py-3">
-    <div class="container">
-      <h1 class="mb-0">SONG HOME PAGE</h1>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href={{url_for('main')}}>Home</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ml-auto">
+        <!-- Display "Hello, username!" on the webpage -->
+        <p class="navbar-text mr-2">Hello, {{ username }}!</p>
+        <li class="nav-item">
+          <a class="nav-link" href={{url_for('user_detail')}}><button type="button" class="btn btn-primary btn-sm">Profile</button></a>
+        </li>
+        <!-- Use Bootstrap button styles for the "Log Out" button -->
+        <li class="nav-item">
+          <a class="nav-link" href={{url_for('logout')}}><button type="button" class="btn btn-secondary btn-sm">Log Out</button></a>
+        </li>
+      </ul>
     </div>
-  </header>
+  </nav>
   <main class="container mt-5">
     <!-- Use Bootstrap form styles -->
     <form method="POST" class="form-inline">
@@ -45,7 +58,27 @@
           <td>{{row['song_name']}}</td>
           <td>{{row['artist']}}</td>
           <td>{{row['release_date']}}</td>
-          <!-- View song details, executes app.py/view_songs_detail() on click -->
+          <td>
+            <!-- Add a form for the "like" button -->
+            {% if row['liked'] %}
+              <!-- If the song is liked, display a "liked" button with a heart icon and a pink background color -->
+              <form method="POST" action={{url_for('remove_from_collections')}}>
+                <!-- Add a hidden field to store the song id -->
+                <input type="hidden" name="sid" value={{row['sid']}}>
+                <!-- Add a "liked" button with a heart icon and a pink background color -->
+                <button type="submit" class="btn liked" style="color: rgb(231, 66, 94); font-size: large">&hearts;</button>
+              </form>
+            {% else %}
+              <!-- If the song is not liked, display a "like" button with a grey background color -->
+              <form method="POST" action={{url_for('add_to_collections')}}>
+                <!-- Add a hidden field to store the song id -->
+                <input type="hidden" name="sid" value={{row['sid']}}>
+                <input type="hidden" name="song_name" value={{row['song_name']}}>
+                <!-- Add a "like" button with a grey background color -->
+                <button type="submit" class="btn like" style="color: rgb(152, 152, 152); font-size:large">&hearts;</button>
+              </form>
+            {% endif %}
+          </td>
           <td><a href={{url_for('view_songs_detail', sid=row['sid'])}}>
             <!-- Use Bootstrap button styles -->
             <button type="button" class="btn btn-secondary btn-sm">View Song</button></a>

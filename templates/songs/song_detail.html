@@ -3,52 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <title>Detail for song</title>
+    <!-- Link to Bootstrap CSS file -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
 </head>
 <body>
-    <table>
-        {% for key, value in data['song_data'].items() %}
-            <tr>
-               <th> {{ key }} </th>
-               <td> {{ value }} </td>
-            </tr>
-        {% endfor %}
-    </table>
-    <!--edit button, 点击后执行app.py/edit_song_detail() -->
-    <a href={{url_for('edit_song_detail', sid=data['song_data']['sid'])}}><button type=”button”>Edit Song</button></a><br>
-
-    <!--delete button, 点击后执行app.py/delete_song() -->
-    <a href={{url_for('delete_song', sid=data['song_data']['sid'])}}><button type=”button”>Delete Song</button></a><br>
-
-    <!--home button, 点击后执行app.py/main() -->
-    <a href={{url_for('main')}}><button type=”button”>Return Home</button></a>
-
-    <form id="commentForm" method="POST">
-        <textarea class="comment-send-input" name="comment" form="commentForm" cols="80" rows="3" placeholder="Write your comment here."></textarea>
-        <input class="comment-send-button" type="submit" value="Comment">
-    </form>
-
-    <table class="table mt-3">
-      <thead>
-        <tr>
-          <th>username</th>
-          <th>content</th>
-          <th>date</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in data['comments'] %}
-        <tr>
-          <td>{{row['username']}}</td>
-          <td>{{row['content']}}</td>
-          <td>{{row['date']}}</td>
-          <!-- View song details, executes app.py/view_songs_detail() on click -->
-          <td><a href={{url_for('delete_comment', cid=row['cid'])}}>
-            <!-- Use Bootstrap button styles -->
-            <button type="button" class="btn btn-secondary btn-sm">Delete</button></a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-</body>
+  <!-- Use Bootstrap container and row classes to create a responsive layout -->
+  <div class="container mt-3">
+    <!-- Song data table -->
+    <div class="row">
+        <div class="col-md-8">
+            <h4>Song data</h4>
+            <!-- Use Bootstrap table classes to style the table -->
+            <table class="table table-bordered">
+                {% for key, value in data['song_data'].items() %}
+                    <tr>
+                        <th> {{ key }} </th>
+                        <td> {{ value }} </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    <!-- Button group -->
+    <div class="row mt-3">
+        <div class="col-md-8">
+            <!-- Use Bootstrap button styles for the buttons -->
+            <a href={{url_for('edit_song_detail', sid=data['song_data']['sid'])}}>
+                <button type="button" class="btn btn-primary">Edit Song</button>
+            </a>
+            <a href={{url_for('delete_song', sid=data['song_data']['sid'])}}>
+                <button type="button" class="btn btn-danger">Delete Song</button>
+            </a>
+            <a href={{url_for('main')}}>
+                <button type="button" class="btn btn-secondary">Return Home</button>
+            </a>
+        </div>
+    </div>
+    <!-- Comment form -->
+    <div class="row mt-3">
+        <div class="col-md-8">
+            <!-- Use Bootstrap form styles for the form -->
+            <form id="commentForm" method="POST" class="mt-3">
+                <textarea class="form-control" name="comment" form="commentForm" cols="80" rows="3" placeholder="Write your comment here."></textarea>
+                <input class="btn btn-primary mt-3" type="submit" value="Comment">
+            </form>
+        </div>
+    </div>
+    <!-- Comment table -->
+    <div class="row mt-3">
+        <div class="col-md-8">
+            <h4>Comments</h4>
+            <!-- Use Bootstrap table classes to style the table -->
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>username</th>
+                  <th>content</th>
+                  <th>date</th>
+                  <th>actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in data['comments'] %}
+                <tr>
+                  <td>{{row['username']}}</td>
+                  <td>{{row['content']}}</td>
+                  <td>{{row['date']}}</td>
+                  <!-- Use Bootstrap button styles for the delete button -->
+                  <td>
+                    <a href={{url_for('delete_comment', cid=row['cid'])}}>
+                      <!-- Use Bootstrap button styles -->
+                      <button type="button" class="btn btn-secondary btn-sm">Delete</button>
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Footer -->
+        <footer class="bg-light py-3 mt-5">
+          <p class="text-center mb-0">Copyright &copy; 2021</p>
+        </footer>
+      </div>
+      <!-- Link to Bootstrap JavaScript file -->
+      <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+      <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+  </body>
 </html>
+    
