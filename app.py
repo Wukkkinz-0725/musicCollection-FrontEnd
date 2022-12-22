@@ -392,5 +392,5 @@ def user_detail():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 9001))
-    app.run(host="localhost", port=port)
+    port = int(os.environ.get('PORT', 8000))
+    app.run(host="0.0.0.0", port=port)
