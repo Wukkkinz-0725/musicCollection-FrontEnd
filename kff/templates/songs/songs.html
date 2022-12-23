@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>SONG HOME PAGE</title>
+  <!-- Include Bootstrap CSS file -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href={{url_for('main')}}>Home</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ml-auto">
+        <!-- Display "Hello, username!" on the webpage -->
+        <p class="navbar-text mr-2">Hello, {{ username }}!</p>
+        <li class="nav-item">
+          <a class="nav-link" href={{url_for('user_detail')}}><button type="button" class="btn btn-primary btn-sm">Profile</button></a>
+        </li>
+        <!-- Use Bootstrap button styles for the "Log Out" button -->
+        <li class="nav-item">
+          <a class="nav-link" href={{url_for('logout')}}><button type="button" class="btn btn-secondary btn-sm">Log Out</button></a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  <main class="container mt-5">
+    <!-- Use Bootstrap form styles -->
+    <form method="POST" class="form-inline">
+      <label for="query_type" class="mr-2">Search by:</label>
+      <select name="query_type" id="query_type" class="form-control mr-2">
+        <option value="sid">SID</option>
+        <option value="name" selected>Name</option>
+      </select>
+      <label for="query_value" class="mr-2">Query:</label>
+      <input type="text" id="query_value" name="query_value" class="form-control mr-2">
+      <!-- Use Bootstrap button styles -->
+      <input type="submit" value="Submit" class="btn btn-primary">
+    </form>
+    <!-- Use Bootstrap table styles -->
+    <table class="table mt-3">
+      <thead>
+        <tr>
+          <th>Song Id</th>
+          <th>Song Name</th>
+          <th>Artist</th>
+          <th>Release Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in data %}
+        <tr>
+          <td>{{row['sid']}}</td>
+          <td>{{row['song_name']}}</td>
+          <td>{{row['artist']}}</td>
+          <td>{{row['release_date']}}</td>
+          <td>
+            <!-- Add a form for the "like" button -->
+            {% if row['liked'] %}
+              <!-- If the song is liked, display a "liked" button with a heart icon and a pink background color -->
+              <form method="POST" action={{url_for('remove_from_collections')}}>
+                <!-- Add a hidden field to store the song id -->
+                <input type="hidden" name="sid" value={{row['sid']}}>
+                <!-- Add a "liked" button with a heart icon and a pink background color -->
+                <button type="submit" class="btn liked" style="color: rgb(231, 66, 94); font-size: large">&hearts;</button>
+              </form>
+            {% else %}
+              <!-- If the song is not liked, display a "like" button with a grey background color -->
+              <form method="POST" action={{url_for('add_to_collections')}}>
+                <!-- Add a hidden field to store the song id -->
+                <input type="hidden" name="sid" value={{row['sid']}}>
+                <input type="hidden" name="song_name" value={{row['song_name']}}>
+                <!-- Add a "like" button with a grey background color -->
+                <button type="submit" class="btn like" style="color: rgb(152, 152, 152); font-size:large">&hearts;</button>
+              </form>
+            {% endif %}
+          </td>
+          <td><a href={{url_for('view_songs_detail', sid=row['sid'])}}>
+            <!-- Use Bootstrap button styles -->
+            <button type="button" class="btn btn-secondary btn-sm">View Song</button></a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+      <a href={{url_for('create_songs_webpage')}}><button type="button" class="btn btn-primary">New Song</button></a>
+    </main>
+    <footer class="bg-light py-3 mt-5">
+      <p class="text-center mb-0">Copyright &copy; 2021</p>
+    </footer>
+      <!-- Include Bootstrap JavaScript file -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+</body>
+
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Include Bootstrap CSS file -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <style>
+        /* Add a custom background color for the title section */
+        .title-section {
+            background-color: #f5f5f5;
+        }
+        /* Add some padding to the title section */
+        .title-section .container {
+            padding: 20px;
+        }
+        /* Add a custom background color for the content section */
+        .content-section {
+            background-color: #ffffff;
+        }
+        /* Add some padding to the content section */
+        .content-section .container {
+            padding: 20px;
+        }
+        /* Add a custom font for the page */
+        body {
+            font-family: "Open Sans", sans-serif;
+        }
+        /* Add some custom styling to the form */
+        form {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        label {
+            font-weight: bold;
+        }
+        /* Add some custom styling to the submit button */
+        input[type="submit"] {
+            width: 100%;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header class="title-section bg-light py-3">
+        <div class="container">
+            <h1 class="mb-0">Create Song</h1>
+        </div>
+    </header>
+    <main class="content-section container mt-5">
+        <!-- Display any flashed messages -->
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="alert alert-danger" role="alert">
+              {% for message in messages %}
+                {{ message }}
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        <!--点击submit后，执行app.py/create_songs_webpage()，此时request.method == 'POST'-->
+          <form method="POST">
+              <div class="form-group">
+                  <label for="song_name">Song Name:</label>
+                  <input type="text" class="form-control" id="song_name" name="song_name">
+              </div>
+              <div class="form-group">
+                <label for="artist">Artist:</label>
+                <input type="text" class="form-control" id="artist" name="artist">
+            </div>
+            <div class="form-group">
+                <label for="release_date">Release Date:</label>
+                <input type="text" class="form-control" id="release_date" name="release_date">
+            </div>
+            <!-- Use Bootstrap button styles -->
+            <input type="submit" value="Submit" class="btn btn-primary">
+        </form>
+    </main>
+    <footer class="bg-light py-3 mt-5">
+        <p class="text-center mb-0">Copyright &copy; 2021</p>
+    </footer>
+        <!-- Include Bootstrap JavaScript file -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.16.0/dist/umd/popper.min.js" integrity="sha384-Q61C8JLQ6dGcZEOB/L8ydGgsK/1pfRJG/kM+8tptn5+3kkNX9rZW+1aGvbJL3l+O" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+    </body>
+</html>

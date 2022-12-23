@@ -264,33 +264,6 @@ def edit_song_detail(sid):
     return render_template('./songs/edit_song_detail.html', data=data)
 
 
-@app.route('/users/edit/', methods=('GET', 'POST'))
-def edit_user_detail():
-    if session['google_id'] is None:
-        return redirect(url_for('index'))
-    data = get_data(base_url, '/users/query/' + str(session['uid']))
-    if request.method == 'POST':
-        # 在html里点击submit，会通过POST进入这个if statement
-        dic = {}
-        age = request.form['age']
-        if len(request.form['username']) > 0:
-            dic['username'] = request.form['username']
-            session['name'] = request.form['username']
-        if len(age) > 0:
-            if age.isdigit():
-                dic['age'] = age
-            else:
-                flash('Age is invalid.')
-                return redirect(url_for('edit_user_detail'))
-        if len(request.form['description']) > 0:
-            dic['description'] = request.form['description']
-        if len(dic) > 0:
-            res = post_data(base_url, '/users/update/' + str(session['uid']), dic)
-            print(res.json())
-            return redirect(url_for('user_detail'))
-    return render_template('./users/edit_user_detail.html', data=data)
-
-
 @app.route("/logout_google")
 def logout():
     if session['google_id'] is None:
@@ -331,8 +304,7 @@ def create_user():
         res = post_data(base_url, '/users/create', dic)
         session['uid'] = res.json()['uid']
     else:
-        session['uid'] = uid
-        session['name'] = get_data(base_url, '/users/query/' + str(uid))['username']
+        session['uid'] = uid  # TODO: get uid from res
     return redirect(url_for('main'))
 
 # code for user profile
