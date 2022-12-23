@@ -132,16 +132,34 @@ def authorize():
 
 
 # functions for songs
+@app.route("/main/pagination", methods=['GET'])
+def pagination():
+    if session['google_id'] is None:
+        return redirect(url_for('index'))
+    page = request.args.get('page', 1, type=int)
+    offset = request.args.get('offset', 0, type=int)
+    # retrieve the data for the specified page using the offset and limit
+    print(base_url +'/songs/all?offset=' + str(offset) + '&limit=20')
+    data = get_data(base_url, '/songs/all?offset=' + str(offset) + '&limit=20')
+    print(data)
+    # mark each song as liked or not liked based on the user's collection
+    collection_data = get_user_collections_sid(session['uid'])
+    for song in data:
+        song['liked'] = True if song['sid'] in collection_data else False
+    # render the template with the updated data
+    return render_template('./songs/songs.html', data=data, username=session['name'], page=page, num_pages=session['num_pages'])
+
 @app.route("/main", methods=('GET', 'POST'))
 def main():
     if session['google_id'] is None:
         return redirect(url_for('index'))
+    # retrieve the data for the current page
     data = get_data(base_url, '/songs/all')
-
+    # mark each song as liked or not liked based on the user's collection
     collection_data = get_user_collections_sid(session['uid'])
     for song in data:
         song['liked'] = True if song['sid'] in collection_data else False
-
+    # handle search query
     if request.method == 'POST':
         query_type = request.form['query_type']
         query_value = request.form['query_value']
@@ -150,8 +168,17 @@ def main():
         elif query_type == 'name':
             res = get_data(base_url, '/songs/query/song_name/' + query_value)
         data = {'dict': res, 'query_type': query_type, 'query_value': query_value}
-        return render_template('./songs/query_result.html', data=data)
-    return render_template('./songs/songs.html', data=data, username=session['name'])
+        # calculate the total number of pages
+        total_items = len(data['dict'])
+        num_pages = math.ceil(total_items / 20)
+        # render the template with the updated data
+        return render_template('./songs/query_result.html', data=data, page=1, num_pages=num_pages)
+    # calculate the total number of pages
+    total_items = len(data)
+    num_pages = math.ceil(total_items / 20)
+    session['num_pages'] = num_pages
+    # render the template with the updated data
+    return redirect(url_for('pagination', page=1, offset=0))
 
 
 @app.route('/songs/add_to_collections', methods=['POST'])
