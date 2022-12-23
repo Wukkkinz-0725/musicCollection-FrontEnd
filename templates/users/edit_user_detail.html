@@ -43,7 +43,7 @@
 <body>
     <header class="title-section bg-light py-3">
         <div class="container">
-            <h1 class="mb-0">Edit Song</h1>
+            <h1 class="mb-0">Edit profile</h1>
         </div>
     </header>
     <main class="content-section container mt-5">
@@ -60,16 +60,16 @@
         <!--点击submit后，执行app.py/create_songs_webpage()，此时request.method == 'POST'-->
           <form method="POST">
               <div class="form-group">
-                  <label for="song_name">Song Name:</label>
-                  <input type="text" id="song_name" name="song_name" value="{{data['song_name']}}">
+                  <label for="username">Username:</label>
+                  <input type="text" class="form-control" id="username" name="username" value="{{data['username']}}">
               </div>
               <div class="form-group">
-                <label for="artist">Artist:</label>
-                <input type="text" id="artist" name="artist" value="{{data['artist']}}">
+                <label for="age">Age:</label>
+                <input type="text" class="form-control" id="age" name="age" value="{{data['age']}}">
             </div>
             <div class="form-group">
-                <label for="release_date">Release Date:</label>
-                <input type="text" id="release_date" name="release_date" value="{{data['release_date']}}">
+                <label for="description">Description:</label>
+                <input type="text" class="form-control" id="description" name="description" value="{{data['description']}}">
             </div>
             <!-- Use Bootstrap button styles -->
             <input type="submit" value="Submit" class="btn btn-primary">
